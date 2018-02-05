@@ -4,11 +4,6 @@ echo
 echo ">> Enter root password"
 passwd 
 
-echo 
-echo ">> Enter hostname"
-# read hostname
-hostname=arch-vm
-hostnamectl set-hostname $hostname
 
 echo 
 echo ">> Set time zone"
@@ -25,29 +20,30 @@ mkinitcpio -p linux
 
 echo 
 echo ">> Baisc network setting"
-pacman -S dnsmq wget iw wpa_supplicant dialog networkmanager --noconfirm
-systemctl enable NetworkManager
+pacman -S dnsmasq wget iw wpa_supplicant dialog networkmanager --noconfirm --needed
+systemctl enable NetworkManager.service
 
 echo ">> SSH"
-pacman -S openssh --noconfirm
+pacman -S openssh --noconfirm --needed
 systemctl enable sshd
 
 echo 
 echo "Create a sudo user"
-echo -n ">> Enter the username > "
+echo -n ">> Enter the username: "
 read username
 useradd -m -g users -G wheel -s /bin/bash $username
 passwd $username
 
 echo 
 echo  ">> Add the wheel group to sudoers"
-#'sed -i "s/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/" /etc/sudoers'
-pacman -S vim --noconfirm
+pacman -S vim --noconfirm --needed
+echo ">> enable sudo in whell group by visudo"
+read
 visudo
 
 echo 
 echo ">> GRUB"
-pacman -S grub efibootmgr --noconfirm
+pacman -S grub efibootmgr --noconfirm --needed
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub
 grub-mkconfig -o /boot/grub/grub.cfg
 mkdir -p /boot/efi/EFI/BOOT

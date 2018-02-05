@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 if ! type vboxmanage > /dev/null; then
     echo "Vboxmange not found, please install virtualbox first!"
@@ -37,10 +37,17 @@ else
 fi
 
 echo "modify vm with $memory_size MB memory ... "
-vboxmanage modifyvm $vm_name --memory $memory_size --acpi on --firmware efi \
-    --vram 256 --accelerate2dvideo on --boot1 dvd \
-    --nic1 nat --natpf1 "guest_ssh,tcp,,3022,,22" --rtcuseutc on \
-    --cableconnected1 on --ostype ArchLinux_64
+vboxmanage modifyvm $vm_name \
+    --memory $memory_size \
+    --acpi on \
+    --firmware efi \
+    --vram 256 \
+    --accelerate2dvideo on \
+    --boot1 dvd \
+    --nic1 nat --natpf1 "guest_ssh,tcp,,3023,,22" \
+    --rtcuseutc on \
+    --cableconnected1 on \
+    --ostype ArchLinux_64
 
 if [[ $3 == "" ]]; then
     echo
@@ -57,9 +64,15 @@ vboxmanage createvdi --filename ~/VirtualBox\ VMs/$vm_name/${vm_name}_disk.vdi -
 
 echo
 echo "create sata storage controller ... "
-vboxmanage storagectl $vm_name --name ${vm_name}_sata_controller --add sata
-vboxmanage storageattach $vm_name --storagectl ${vm_name}_sata_controller --port 0 --device 0 \
-    --type hdd --medium ~/VirtualBox\ VMs/$vm_name/${vm_name}_disk.vdi
+vboxmanage storagectl $vm_name \
+    --name ${vm_name}_sata_controller \
+    --add sata
+vboxmanage storageattach $vm_name \
+    --storagectl ${vm_name}_sata_controller \
+    --port 0 \
+    --device 0 \
+    --type hdd \
+    --medium ~/VirtualBox\ VMs/$vm_name/${vm_name}_disk.vdi
 
 
 if [[ $4 == "" ]]; then
@@ -72,11 +85,23 @@ fi
 
 echo
 echo "create ide storage controller ... "
-vboxmanage storagectl $vm_name --name ${vm_name}_ide_controller --add ide
-vboxmanage storageattach $vm_name --storagectl ${vm_name}_ide_controller --port 0 --device 0 \
-    --type dvddrive --medium $iso_location
+vboxmanage storagectl $vm_name \
+    --name ${vm_name}_ide_controller \
+    --add ide
+vboxmanage storageattach $vm_name \
+    --storagectl ${vm_name}_ide_controller \
+    --port 0 --device 0 \
+    --type dvddrive \
+    --medium $iso_location
 
 echo "finished!"
 
-vboxmanage startvm $vm_name
-# vboxmanage startvm $vm_name --type=headless
+echo -n "Start VM headlessly (y/n) or just abort (a): "
+read yes_or_no
+if [[ $yes_or_no == "y" ]]; then
+    vboxmanage startvm $vm_name --type=headless
+elif [[ $yes_or_no == "a" ]]; then
+    exit
+else 
+    vboxmanage startvm $vm_name
+fi

@@ -14,6 +14,7 @@ parted $device set 1 boot on
 parted $device mkpart primary ext4 513M 100%
 parted $device print
 
+
 echo 
 echo ">> Format filesystem"
 mkfs.fat ${device}1
@@ -25,6 +26,11 @@ mount ${device}2 /mnt
 mkdir -p /mnt/boot/efi
 mount ${device}1 /mnt/boot/efi
 
+echo 
+echo ">> Enter hostname"
+read hostname
+# hostname=arch-vm
+echo $hostname > /mnt/etc/hostname
 
 echo 
 echo ">> Use the ranked mirrorlist"
