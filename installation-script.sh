@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 echo ">> Start installation ... "
 echo ">> Set ntp"
@@ -29,7 +29,8 @@ mount ${device}1 /mnt/boot/efi
 echo 
 echo ">> Use the ranked mirrorlist"
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak
-cp ranked_mirrorlist /etc/pacman.d/mirrorlist
+curl https://raw.githubusercontent.com/YuanYuYuan/arch-installation-tools/master/taiwan-mirror-list.txt > ranked_mirrorlist
+mv ranked_mirrorlist /etc/pacman.d/mirrorlist
 
 echo 
 echo ">> Install base packages"
@@ -39,66 +40,9 @@ echo
 echo ">> Generate fstab"
 genfstab -U /mnt >> /mnt/etc/fstab
 
-
-echo 
-echo "===== Configurations under chroot ====="
-arch_chroot() {
-    arch-chroot /mnt /bin/bash -c "${*}"
-}
-
-echo 
-echo ">> Enter root password"
-arch_chroot passwd 
-
-echo 
-echo ">> Enter hostname"
-# read hostname
-hostname=arch-vm
-arch_chroot "hostnamectl set-hostname $hostname"
-
-echo 
-echo ">> Set time zone"
-arch_chroot ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
-arch_chroot hwclock --systohc --utc
-
-echo 
-echo ">> Set locale"
-for locale_name in 'zh_TW.UTF-8 UTF-8' 'zh_TW BIG5' 'en_US.UTF-8 UTF-8' 'en_US ISO-8859-1'; do
-    arch_chroot "echo $locale_name >> /etc/locale.gen"
-done
-arch_chroot locale-gen
-arch_chroot "echo LANG=en_US.UTF-8 > /etc/locale.conf"
-arch_chroot mkinitcpio -p linux
-
-echo 
-echo ">> Baisc network setting"
-arch_chroot pacman -S dnsmq wget iw wpa_supplicant dialog networkmanager --noconfirm
-arch_chroot systemctl enable NetworkManager
-
-echo ">> SSH"
-arch_chroot pacman -S openssh --noconfirm
-arch_chroot systemctl enable sshd
-
-echo 
-echo "Create a sudo user"
-echo -n ">> Enter the username > "
-read username
-arch_chroot useradd -m -g users -G wheel -s /bin/bash $username
-arch_chroot passwd $username
-
-echo 
-echo  ">> Add the wheel group to sudoers"
-#arch_chroot 'sed -i "s/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/" /etc/sudoers'
-arch_chroot pacman -S vim --noconfirm
-arch_chroot visudo
-
-echo 
-echo ">> GRUB"
-arch_chroot pacman -S grub efibootmgr --noconfirm
-arch_chroot grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub
-arch_chroot grub-mkconfig -o /boot/grub/grub.cfg
-arch_chroot mkdir -p /boot/efi/EFI/BOOT
-arch_chroot cp /boot/efi/EFI/grub/grubx64.efi /boot/efi/EFI/BOOT/BOOTX64.EFI
+curl https://raw.githubusercontent.com/YuanYuYuan/arch-installation-tools/master/chroot.sh > /mnt/chroot.sh
+arch-chroot /mnt /bin/bash chroot.sh
+rm /mnt/chroot.sh
 
 echo 
 echo "Unmount and poweroff"
