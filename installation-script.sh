@@ -26,11 +26,6 @@ mount ${device}2 /mnt
 mkdir -p /mnt/boot/efi
 mount ${device}1 /mnt/boot/efi
 
-echo 
-echo ">> Enter hostname"
-read hostname
-# hostname=arch-vm
-echo $hostname > /mnt/etc/hostname
 
 echo 
 echo ">> Use the ranked mirrorlist"
@@ -45,6 +40,12 @@ pacstrap /mnt base base-devel
 echo 
 echo ">> Generate fstab"
 genfstab -U /mnt >> /mnt/etc/fstab
+
+echo 
+echo -n ">> Enter hostname: "
+read hostname
+# hostname=arch-vm
+echo $hostname > /mnt/etc/hostname
 
 curl https://raw.githubusercontent.com/YuanYuYuan/arch-installation-tools/master/chroot.sh > /mnt/chroot.sh
 arch-chroot /mnt /bin/bash chroot.sh

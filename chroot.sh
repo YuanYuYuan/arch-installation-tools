@@ -37,7 +37,7 @@ passwd $username
 echo 
 echo  ">> Add the wheel group to sudoers"
 pacman -S vim --noconfirm --needed
-echo ">> enable sudo in whell group by visudo"
+echo ">> Press Enter to edit group wheel by visudo"
 read
 visudo
 
